@@ -2,8 +2,7 @@
 # IMPORTS
 # =========================
 
-# Call the API
-import requests
+
 
 # Build the Streamlit app
 import streamlit as st
@@ -11,8 +10,6 @@ import streamlit as st
 # Work with API data
 import pandas as pd
 
-# Pause between API requests
-import time
 
 
 # =========================
@@ -23,71 +20,7 @@ import time
 st.title("NBA API Dashboard")
 
 
-# =========================
-# API KEY
-# =========================
-
-# Get the API key from the private secrets file
-api_key = st.secrets["BALLDONTLIE_API_KEY"]
-
-
-# =========================
-# API REQUEST
-# =========================
-
-# Send the API key with each request
-headers = {
-    "Authorization": api_key
-}
-
-
-@st.cache_data
-def load_players():
-
-    # Store all player records
-    all_players = []
-
-    # Start with no cursor
-    cursor = None
-
-    while True:
-
-        # Request up to 100 players at a time
-        url = "https://api.balldontlie.io/v1/players?per_page=100"
-
-        # After the first request, use next_cursor
-        if cursor is not None:
-            url += f"&cursor={cursor}"
-
-        # Make the API request
-        response = requests.get(url, headers=headers)
-
-        # Stop if the API request failed
-        if response.status_code != 200:
-            st.error(f"API request failed: {response.status_code}")
-            break
-
-        # Convert the response to JSON
-        data = response.json()
-
-        # Add this batch to the full player list
-        all_players.extend(data["data"])
-
-        # Get the next cursor
-        cursor = data.get("meta", {}).get("next_cursor")
-
-        # Stop when there are no more records
-        if cursor is None:
-            break
-
-        # Pause 13 seconds between requests
-        time.sleep(13)
-
-    # Turn all collected player records into one dataframe
-    return pd.DataFrame(all_players)
-
-
-# Load saved player data from the API 
+# Load saved player data  
 
 df = pd.read_csv("players.csv")
 # =========================
